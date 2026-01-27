@@ -1,0 +1,43 @@
+async function startDeployment() {
+    const sub = document.getElementById('domainInput').value.trim();
+    const rawCode = document.getElementById('rawCode').value;
+    const fileInput = document.getElementById('fileInput');
+    const btn = document.getElementById('deployBtn');
+
+    if(!sub) return alert("Isi nama domain dulu, Bang!");
+
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> LAGI PROSES...`;
+
+    // GUNAKAN FORMDATA (METHOD POST)
+    const formData = new FormData();
+    formData.append('subdomain', sub);
+    formData.append('rootDomain', "langz4youu.my.id"); // Default domain lo
+    formData.append('rawCode', rawCode);
+    
+    if(fileInput.files[0]) {
+        formData.append('projectFile', fileInput.files[0]);
+    }
+
+    try {
+        const response = await fetch('/api/deploy', {
+            method: 'POST',
+            body: formData // Body otomatis jadi multipart/form-data
+        });
+
+        const data = await response.json();
+
+        if(data.success) {
+            document.getElementById('finalUrl').value = data.url;
+            document.getElementById('resultArea').classList.remove('hidden');
+            document.getElementById('resultArea').scrollIntoView({ behavior: 'smooth' });
+        } else {
+            alert("Gagal: " + data.message);
+        }
+    } catch (err) {
+        alert("Terjadi kesalahan koneksi ke server!");
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fas fa-rocket animate-bounce"></i> DEPLOY SEKARANG`;
+    }
+}
